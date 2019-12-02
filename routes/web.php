@@ -14,3 +14,6 @@
 Route::get('/', function () {
     return view('welcome');
 });
+
+Route::get('auth/reset', 'AuthController@reset')->name('api.v1.auth.reset');
+Route::post('auth/reset', 'AuthController@reset')->name('api.v1.auth.reset');
