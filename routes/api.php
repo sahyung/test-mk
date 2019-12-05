@@ -12,8 +12,17 @@ use Illuminate\Http\Request;
 | is assigned the "api" middleware group. Enjoy building your API!
 |
 */
+// Kost
+Route::get('kosts', 'KostController@index');
+Route::get('kosts/{id}', 'KostController@show');
 
 Route::group(['middleware' => 'auth:api'], function(){
+    // Kost
+    Route::post('kosts', 'KostController@store')->middleware('isAdminOrKostOwner');
+    Route::get('kosts/{id}/check_availability', 'KostController@checkAvailability');
+    Route::put('kosts/{id}', 'KostController@update')->middleware('isAdminOrKostOwner');
+    Route::delete('kosts/{id}', 'KostController@destroy')->middleware('isAdminOrKostOwner');
+
     // Users
     Route::get('users', 'UserController@index')->middleware('isAdmin');
     Route::get('users/{id}', 'UserController@show')->middleware('isAdminOrSelf');

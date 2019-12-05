@@ -15,9 +15,12 @@ class CreateUsersTable extends Migration
     {
         Schema::create('users', function (Blueprint $table) {
             $table->uuid('id');
+            $table->primary('id');
+            $table->boolean('is_premium')->default(false);
             $table->string('name')->nullable();
+            $table->double('credit')->nullable();
             $table->string('email')->unique();
-            $table->enum('role',['user','admin','superadmin'])->default('user');
+            $table->enum('role',['user','kostowner','admin','superadmin'])->default('user');
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
             $table->rememberToken()->nullable();

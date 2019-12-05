@@ -49,4 +49,12 @@ class User extends Authenticatable implements JWTSubject
         return [];
     }
 
+    public function serializeLess()
+    {
+        return array(
+            'id' => $this->id,
+            'name' => $this->name,
+        );
+    }
+
 }
