@@ -60,7 +60,8 @@ class KostController extends Controller
         $request->merge([
             'owner_id' => $user->id,
         ]);
-        $this->index($request);
+
+        return $this->index($request);
     }
 
     /**
