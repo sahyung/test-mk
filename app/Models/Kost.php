@@ -2,10 +2,9 @@
 
 namespace App\Models;
 
+use App\Traits\UuidsTrait;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use App\Models\User;
-use App\Traits\UuidsTrait;
 
 class Kost extends Model
 {
@@ -30,7 +29,7 @@ class Kost extends Model
         return ($this->hasOne('App\Models\User', 'id', 'user_id')->first()) ? $this->hasOne('App\Models\User', 'id', 'user_id')->first()->serializeLess() : null;
     }
 
-    public function serializeWithAvailability(Type $var = null)
+    public function serializeWithAvailability()
     {
         return [
             'id' => $this->id,

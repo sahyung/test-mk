@@ -1,6 +1,6 @@
 <?php
 
-use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Route;
 
 /*
 |--------------------------------------------------------------------------
@@ -16,7 +16,7 @@ use Illuminate\Http\Request;
 Route::get('kosts', 'KostController@index');
 Route::get('kosts/{id}', 'KostController@show');
 
-Route::group(['middleware' => 'auth:api'], function(){
+Route::group(['middleware' => 'auth:api'], function () {
     // Kost
     Route::post('kosts', 'KostController@store')->middleware('isAdminOrKostOwner');
     Route::get('kosts/{id}/check_availability', 'KostController@checkAvailability');
@@ -33,7 +33,7 @@ Route::prefix('auth')->group(function () {
     Route::post('login', 'AuthController@login');
     Route::post('forgot', 'AuthController@forgot');
     Route::get('refresh', 'AuthController@refresh');
-    Route::group(['middleware' => 'auth:api'], function(){
+    Route::group(['middleware' => 'auth:api'], function () {
         Route::get('user', 'AuthController@user');
         Route::post('logout', 'AuthController@logout');
     });

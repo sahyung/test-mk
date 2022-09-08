@@ -4,32 +4,54 @@ namespace App\Http\Controllers\Api;
 
 use App\Mail\ForgotPass;
 use App\Models\User;
+use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
+
 class AuthController extends Controller
 {
     public function register(Request $request)
     {
         $v = Validator::make($request->all(), [
+            'name' => 'required|string|max:191',
+            'is_premium' => 'nullable|boolean',
+            'role' => 'required|in:user,kostowner',
             'email' => 'required|email|unique:users',
-            'password'  => 'required|min:3|confirmed',
+            'password' => 'required|min:3|confirmed',
         ]);
-        if ($v->fails())
-        {
+
+        if ($v->fails()) {
             return response()->json([
                 'status' => 'error',
-                'errors' => $v->errors()
+                'errors' => $v->errors(),
             ], 422);
         }
-        $user = new User;
+        $user = new User();
+        $user->name = $request->name;
+        $user->role = $request->role;
         $user->email = $request->email;
         $user->password = bcrypt($request->password);
+
+        if ($request->role === config('constants.roles.user')) {
+            $user->credit = config('constants.credit.common');
+            // dd((bool) $request->is_premium);
+            if ($request->is_premium) {
+                $user->is_premium = $request->is_premium;
+                $user->credit = config('constants.credit.premium');
+            }
+        }
+
         $user->save();
-        return response()->json(['status' => 'success'], 200);
+
+        return response()->json([
+            'status' => 'success',
+            'data' => $user,
+        ], 200);
     }
+
     public function login(Request $request)
     {
         $credentials = $request->only('email', 'password');
@@ -45,7 +67,7 @@ class AuthController extends Controller
         $this->guard()->logout();
         return response()->json([
             'status' => 'success',
-            'msg' => 'Logged out Successfully.'
+            'msg' => 'Logged out Successfully.',
         ], 200);
     }
 
@@ -54,7 +76,7 @@ class AuthController extends Controller
         $user = User::find(Auth::user()->id);
         return response()->json([
             'status' => 'success',
-            'data' => $user
+            'data' => $user,
         ]);
     }
 
@@ -84,10 +106,10 @@ class AuthController extends Controller
     protected function respondWithToken($token)
     {
         return response()->json([
-            "success"      => true,
+            "success" => true,
             'access_token' => $token,
-            'token_type'   => 'bearer',
-            'expires_in'   => auth('api')->factory()->getTTL() * 60,
+            'token_type' => 'bearer',
+            'expires_in' => auth('api')->factory()->getTTL() * 60,
         ]);
     }
 
@@ -100,14 +122,14 @@ class AuthController extends Controller
      */
     public function forgot(Request $request)
     {
-        $user = new User;
+        $user = new User();
 
         $user = $user->where('email', $request->email)->first();
-        if ( ! empty($user)) {
-            $data    = $user;
-            $id      = $data->id;
+        if (!empty($user)) {
+            $data = $user;
+            $id = $data->id;
             $expired = time() + (60 * 60); // one hour expiry
-            $link    = url('/')."/auth/reset?token=".urlencode(encrypt($expired.','.$id));
+            $link = url('/') . "/auth/reset?token=" . urlencode(encrypt($expired . ',' . $id));
 
             Mail::to($request->email)->send(new ForgotPass($link, $data));
 
@@ -121,7 +143,6 @@ class AuthController extends Controller
                 "message" => 'Email not found in database',
             ], 201);
         }
-
     }
 
     /**
@@ -133,10 +154,9 @@ class AuthController extends Controller
      */
     public function reset(Request $request)
     {
-
-        $data            = [];
+        $data = [];
         $data["success"] = false;
-        $data["reset"]   = false;
+        $data["reset"] = false;
 
         if ($request->token) {
             try {
@@ -147,10 +167,8 @@ class AuthController extends Controller
             $key = explode(",", $decrypted);
 
             if ($id = $key[1] && time() <= $key[0]) {
-
                 if ($user = User::find($key[1])) {
                     if ($request->password) {
-
                         $user->password = Hash::make($request->password);
                         if ($user->save()) {
                             $data["success"] = true;
@@ -158,12 +176,12 @@ class AuthController extends Controller
                         $data["reset"] = true;
                     } else {
                         $data["success"] = true;
-                        $new_reset_token = encrypt($key[0].','.$key[1]);
-                        $decrypted       = decrypt($new_reset_token);
-                        $keyz            = explode(",", $decrypted);
+                        $new_reset_token = encrypt($key[0] . ',' . $key[1]);
+                        $decrypted = decrypt($new_reset_token);
+                        $keyz = explode(",", $decrypted);
 
                         $data["token"] = $new_reset_token;
-                        $data["user"]  = $user;
+                        $data["user"] = $user;
                     }
 
                     return view('auth/reset', $data);

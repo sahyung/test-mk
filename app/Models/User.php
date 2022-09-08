@@ -9,7 +9,13 @@ use Tymon\JWTAuth\Contracts\JWTSubject;
 
 class User extends Authenticatable implements JWTSubject
 {
-    use Notifiable, UuidsTrait;
+    use Notifiable;
+    use UuidsTrait;
+
+    /**
+     * @var boolean
+     */
+    public $incrementing = false;
 
     /**
      * The attributes that are mass assignable.
@@ -17,7 +23,7 @@ class User extends Authenticatable implements JWTSubject
      * @var array
      */
     protected $fillable = [
-        'name', 'email', 'password',
+        'name', 'email', 'password', 'role', 'is_premium'
     ];
 
     /**
@@ -43,7 +49,7 @@ class User extends Authenticatable implements JWTSubject
     {
         return $this->getKey();
     }
-    
+
     public function getJWTCustomClaims()
     {
         return [];
@@ -56,5 +62,4 @@ class User extends Authenticatable implements JWTSubject
             'name' => $this->name,
         );
     }
-
 }
