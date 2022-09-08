@@ -20,6 +20,7 @@ Route::group(['middleware' => 'auth:api'], function () {
     // Kost
     Route::post('kosts', 'KostController@store')->middleware('isAdminOrKostOwner');
     Route::get('kosts/{id}/check_availability', 'KostController@checkAvailability');
+    Route::put('kosts/owned', 'KostController@owned')->middleware('isAdminOrKostOwner');
     Route::put('kosts/{id}', 'KostController@update')->middleware('isAdminOrKostOwner');
     Route::delete('kosts/{id}', 'KostController@destroy')->middleware('isAdminOrKostOwner');
 

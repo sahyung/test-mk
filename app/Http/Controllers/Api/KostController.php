@@ -50,85 +50,95 @@ class KostController extends Controller
     }
 
     /**
+     * Display a listing of the resource owned.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function owned(Request $request)
+    {
+        $user = Auth::user();
+        $request->merge([
+            'owner_id' => $user->id,
+        ]);
+        $this->index($request);
+    }
+
+    /**
      * Display a listing of the resource.
      *
      * @return \Illuminate\Http\Response
      */
     public function index(Request $request)
     {
-        $offset = 0;
-        $limit = 10;
-        $s = '';
-        $op = 'like';
-        $sort = 'price';
-        $order = 'asc';
-        $qs = $request->query->all();
-        if (in_array($qs['sort'], config('customvar.allowed_filter_kost'))
-            and array_key_exists('sort', $qs)
-        ) {
-            $sort = $qs['sort'];
+        $offset = $request->query('offset', 0);
+        $limit = $request->query('limit', 10);
+        $s = $request->query('s', '');
+        $op = $request->query('op', '');
+        $filter = $request->query('filter', null);
+        $sort = $request->query('sort', 'price');
+        $order = $request->query('order', 'asc');
+
+        if (!($offset > 0)) {
+            $offset = 0;
+        }
+        if (!($limit > 0)) {
+            $limit = 10;
         }
 
-        if (array_key_exists('order', $qs)
-            and in_array($qs['order'], ['asc', 'desc'])
-        ) {
-            $order = $qs['order'];
+        if (!in_array($sort, config('customvar.allowed_filter_kost'))) {
+            $sort = config('customvar.allowed_filter_kost')[0];
         }
 
-        if (!array_key_exists('offset', $qs)
-            or !$qs['offset']
-        ) {
-            $qs['offset'] = $offset;
+        if (!in_array($order, config('customvar.order'))) {
+            $order = config('customvar.order')[0];
         }
 
-        if (!array_key_exists('limit', $qs)
-            or !$qs['limit']
-        ) {
-            $qs['limit'] = $limit;
+        if (!in_array($filter, config('customvar.allowed_filter_kost'))) {
+            $filter = null;
         }
 
-        if (!array_key_exists('s', $qs)
-            or !$qs['s']
-        ) {
-            $qs['s'] = $s;
-        }
-
-        if (!array_key_exists('filter', $qs)
-            or !$qs['filter']
-        ) {
-            $qs['filter'] = null;
-        }
-
-        if (in_array($qs['filter'], config('customvar.allowed_filter_kost'))) {
-            if ($qs['filter'] == 'price') {
-                if (array_key_exists('op', $qs)
-                    and in_array($qs['op'], config('customvar.allowed_operator_kost'))
-                ) {
-                    $op = $qs['op'];
-                } else {
+        if (in_array($filter, config('customvar.allowed_filter_kost'))) {
+            if ($filter == 'price') {
+                if (!in_array($op, config('customvar.allowed_operator_kost'))) {
                     return response()->json(
                         [
                             'success' => false,
                             'allowed_operator' => config('customvar.allowed_operator_kost'),
                         ],
-                        200
+                        400
                     );
                 }
             } else {
-                $qs['s'] = '%' . $qs['s'] . '%';
+                $s = '%' . $s . '%';
             }
-            $kosts = Kost::where($qs['filter'], $op, $qs['s'])
-                ->offset($qs['offset'])
-                ->limit($qs['limit'])
+            $kosts = Kost::where($filter, $op, $s)
+                ->when($request->owner_id, function ($q) use ($request) {
+                    $q->where('user_id', $request->owner_id);
+                })
+                ->offset($offset)
+                ->limit($limit)
                 ->orderBy($sort, $order)
                 ->get();
-            $total = Kost::where($qs['filter'], $op, $qs['s'])->get()->count();
+
+            $total = Kost::when($request->owner_id, function ($q) use ($request) {
+                $q->where('user_id', $request->owner_id);
+            })
+            ->get()
+            ->count();
         } else {
-            $kosts = Kost::offset($qs['offset'])
-                ->limit($qs['limit'])
-                ->orderBy($sort, $order)
-                ->get();
-            $total = Kost::get()->count();
+            $kosts = Kost::when($request->owner_id, function ($q) use ($request) {
+                $q->where('user_id', $request->owner_id);
+            })
+            ->offset($offset)
+            ->limit($limit)
+            ->orderBy($sort, $order)
+            ->get();
+            
+            $total = Kost::when($request->owner_id, function ($q) use ($request) {
+                $q->where('user_id', $request->owner_id);
+            })
+            ->get()
+            ->count();
         }
 
         return response()->json(
