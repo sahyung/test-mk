@@ -41,21 +41,21 @@ php artisan serve
 
 ### Backend Developer is asked to create API to
 
-- [x] Register as owner / regular user / premium user
-- [x] Allow owner to add, update, and delete kost
-- [x] Allow owner to see his kost list
-- [x] Allow user to search kost that have been added by owner
-- [x] Allow user to see kost detail
-- [x] Allow user to ask about room availability
-- [x] Allow user to ask about room availability
+- :white_check_mark: Register as owner / regular user / premium user
+- :white_check_mark: Allow owner to add, update, and delete kost
+- :white_check_mark: Allow owner to see his kost list
+- :white_check_mark: Allow user to search kost that have been added by owner
+- :white_check_mark: Allow user to see kost detail
+- :white_check_mark: Allow user to ask about room availability
+- :white_check_mark: Allow user to ask about room availability
 
 ### Requirements
 
-- [x] Regular user will be given 20 credit, premium user will be given 40 credit after register. Owner will have no credit.
-- [x] Owner can add more than 1 kost
-- [x] Search kost by several criteria: name, location, price
-- [x] Search kost sorted by: price
-- [x] Ask about room availability will reduce user credit by 5 point
-- [x] Owner API & ask room availability API need to have authentication
-- [x] Implement scheduled command to recharge user credit on every start of the month
-- [ ] Bonus point if you can create Owner dashboard that use your API
+- :white_check_mark: Regular user will be given 20 credit, premium user will be given 40 credit after register. Owner will have no credit.
+- :white_check_mark: Owner can add more than 1 kost
+- :white_check_mark: Search kost by several criteria: name, location, price
+- :white_check_mark: Search kost sorted by: price
+- :white_check_mark: Ask about room availability will reduce user credit by 5 point
+- :white_check_mark: Owner API & ask room availability API need to have authentication
+- :white_check_mark: Implement scheduled command to recharge user credit on every start of the month
+- :x: Bonus point if you can create Owner dashboard that use your API
